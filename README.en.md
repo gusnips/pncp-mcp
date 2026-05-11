@@ -152,7 +152,8 @@ Claude: [calls get_ata_rp includeItens=true]
 - [x] Phase 4 — Órgãos + Fornecedores + PCA (4 tools)
 - [x] Phase 5 — CNPJ + 4 prompts + 2 resources (1 tool)
 - [x] Smoke test against real APIs (15/15 endpoints)
-- [ ] Phase 6 — Public launch (Show HN, Discord, awesome-lists)
+- [x] **Phase 6 — Public launch** (2026-05-11 · v0.1.0 on [npm](https://www.npmjs.com/package/@licinexusbr/mcp))
+- [ ] Phase 7 — Community adapters (state TCE/TCM, legacy ComprasNet)
 
 ## Scope
 
