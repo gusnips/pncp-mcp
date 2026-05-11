@@ -33,6 +33,8 @@ import {
 } from '../schemas/pncp.js';
 import { cache, TTL_30_MIN, TTL_5_MIN } from '../cache/memory.js';
 import { USER_AGENT } from '../version.js';
+import { getCnpjData, CnpjError } from './cnpj.js';
+import type { CnpjData } from '../schemas/cnpj.js';
 
 const CONSULTA_BASE = 'https://pncp.gov.br/api/consulta/v1';
 const PNCP_BASE = 'https://pncp.gov.br/api/pncp/v1';
@@ -501,6 +503,38 @@ export async function listAtaArquivos(
 
 // ── Órgãos ───────────────────────────────────────────────────────────────────
 
+function mapBrasilApiToOrgao(cnpj: string, c: CnpjData): Orgao {
+  const naturezaCodigo =
+    typeof c.natureza_juridica === 'object' && c.natureza_juridica
+      ? c.natureza_juridica.codigo != null
+        ? String(c.natureza_juridica.codigo)
+        : undefined
+      : undefined;
+  const naturezaNome =
+    typeof c.natureza_juridica === 'string'
+      ? c.natureza_juridica
+      : c.natureza_juridica?.descricao ?? undefined;
+
+  return OrgaoSchema.parse({
+    cnpj,
+    razaoSocial: c.razao_social ?? null,
+    nomeFantasia: c.nome_fantasia ?? null,
+    naturezaJuridicaCodigo: naturezaCodigo ?? null,
+    naturezaJuridicaNome: naturezaNome ?? null,
+    situacaoCadastral: c.descricao_situacao_cadastral ?? null,
+    municipioNome: c.municipio ?? null,
+    ufSigla: c.uf ?? null,
+    _source: 'brasilapi-fallback',
+  });
+}
+
+function shouldFallbackToBrasilApi(err: unknown): boolean {
+  if (!(err instanceof AxiosError)) return false;
+  if (err.code === 'ECONNABORTED') return true; // timeout
+  const status = err.response?.status;
+  return status === 502 || status === 503 || status === 504;
+}
+
 export async function getOrgao(cnpj: string): Promise<Orgao> {
   const cacheKey = `get:orgao:${cnpj}`;
   const cached = cache.get<Orgao>(cacheKey);
@@ -512,6 +546,20 @@ export async function getOrgao(cnpj: string): Promise<Orgao> {
     cache.set(cacheKey, parsed, TTL_30_MIN);
     return parsed;
   } catch (err) {
+    if (shouldFallbackToBrasilApi(err)) {
+      try {
+        const cnpjData = await getCnpjData(cnpj);
+        const parsed = mapBrasilApiToOrgao(cnpj, cnpjData);
+        cache.set(cacheKey, parsed, TTL_30_MIN);
+        return parsed;
+      } catch (fallbackErr) {
+        if (fallbackErr instanceof CnpjError) {
+          // upstream still down + fallback failed: surface original PNCP error
+          throw new PncpError(describeAxiosError(err as AxiosError), err);
+        }
+        throw fallbackErr;
+      }
+    }
     if (err instanceof AxiosError) {
       throw new PncpError(describeAxiosError(err), err);
     }

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-05-11
+
+D-day patch. Adds resiliency for PNCP outages and registers the package with the Official MCP Registry.
+
+### Added
+- `mcpName: "io.github.Licinexus/mcp"` in `package.json` — required for verification by the [Official MCP Registry](https://registry.modelcontextprotocol.io/).
+- `getOrgao` now falls back to BrasilAPI CNPJ data when PNCP returns 502/503/504 or times out. Maps `razao_social`, `nome_fantasia`, `natureza_juridica`, `descricao_situacao_cadastral`, `municipio`, and `uf` into the `Orgao` schema with a `_source: "brasilapi-fallback"` marker so clients can detect degraded mode.
+
+### Notes
+- PNCP detail endpoints showed transient 502/503 errors during the v0.1.0 launch window. The fallback above keeps the most-used tool (`get_orgao`) working during PNCP backend incidents. Tools that have no public alternative still return `isError: true` with a structured error message.
+
 ## [0.1.0] - 2026-04-25
 
 First public-ready release. Public launch pending coordinated rollout.

@@ -12,3 +12,10 @@ coverage/
 .cache/
 .npm/
 .eslintcache
+
+# Launch artifacts (internal)
+LAUNCH_PLAYBOOK.html
+LAUNCH_PLAYBOOK.pdf
+
+# npm pack outputs
+*.tgz
