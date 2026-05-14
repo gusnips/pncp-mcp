@@ -25,6 +25,10 @@
   Mantido pela <a href="https://licinexus.com.br"><b>Licinexus</b></a> como contribuição open source ao ecossistema brasileiro de govtech.
 </p>
 
+<p align="center">
+  🔔 <b>Quer notificações de novas versões?</b> Clica em <b>Watch → Custom → Releases</b> no topo do repositório — toda nova release cai na sua caixa de notificações sem encher o feed.
+</p>
+
 <!-- BEGIN: hero demo -->
 <p align="center">
   <img src=".github/assets/demo.gif" alt="Demo: Licinexus MCP em ação contra PNCP + Receita Federal" width="900">
@@ -98,14 +102,14 @@ Substitua (ou adicione dentro de `mcpServers`):
 
 Após reabrir, na conversa nova:
 
-- Em **Configurações → Conectores → licinexus**, você deve ver **16 ferramentas** listadas (`search_licitacoes`, `get_cnpj_data`, etc.)
+- Em **Configurações → Conectores → licinexus**, você deve ver **18 ferramentas** listadas (`search_licitacoes`, `get_cnpj_data`, etc.)
 - No campo de prompt, digite:
 
 ```
 Quais ferramentas do licinexus você tem disponíveis?
 ```
 
-O Claude deve listar as 16 ferramentas. Pode prosseguir.
+O Claude deve listar as 18 ferramentas. Pode prosseguir.
 
 #### Primeiros prompts para testar
 
@@ -333,7 +337,7 @@ LICINEXUS_LOG_LEVEL=debug npx -y @licinexusbr/mcp
 
 E em outra janela, observe os logs enquanto o cliente faz chamadas.
 
-## Ferramentas (16)
+## Ferramentas (18)
 
 ### Compras / Licitações
 
@@ -375,6 +379,13 @@ E em outra janela, observe os logs enquanto o cliente faz chamadas.
 | Ferramenta      | O que faz                                                                                                                                                        |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `get_cnpj_data` | Cadastro da Receita Federal (CNAEs, sócios, capital, situação) via [BrasilAPI](https://brasilapi.com.br) (padrão) ou MinhaReceita (`CNPJ_PROVIDER=minhareceita`) |
+
+### Análise agregada (v0.2.0)
+
+| Ferramenta                          | O que faz                                                                                                              |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `aggregate_licitacoes_por_periodo`  | Série temporal de contagem (e opcional valor) sobre janela de até 5 anos, com bucketing dia/semana/mês/ano. Filtros por modalidade, UF, município, CNPJ, **esfera de governo** |
+| `compare_periodos`                  | Compara dois períodos lado-a-lado retornando totais + delta absoluto e percentual. Útil pra perguntas tipo "houve antecipação em ano eleitoral?" |
 
 ## Prompts prontos (4)
 

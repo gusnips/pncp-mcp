@@ -25,6 +25,10 @@
   Maintained by <a href="https://licinexus.com.br"><b>Licinexus</b></a> as an open-source contribution to the Brazilian govtech ecosystem.
 </p>
 
+<p align="center">
+  🔔 <b>Want notifications on new releases?</b> Click <b>Watch → Custom → Releases</b> at the top of the repo — every new release lands in your inbox without flooding your feed.
+</p>
+
 <!-- BEGIN: hero demo (replace .github/assets/demo-claude.gif before public launch — see scripts/record-claude-gif.md) -->
 <p align="center">
   <img src=".github/assets/demo.gif" alt="Demo: Licinexus MCP em ação contra PNCP + Receita Federal" width="900">
@@ -98,14 +102,14 @@ Replace (or add inside `mcpServers`):
 
 After reopening, in a new conversation:
 
-- In **Settings → Connectors → licinexus**, you should see **16 tools** listed (`search_licitacoes`, `get_cnpj_data`, etc.)
+- In **Settings → Connectors → licinexus**, you should see **18 tools** listed (`search_licitacoes`, `get_cnpj_data`, etc.)
 - In the prompt field, type:
 
 ```
 What licinexus tools do you have available?
 ```
 
-Claude should list the 16 tools. You can proceed.
+Claude should list the 18 tools. You can proceed.
 
 #### First prompts to try
 
@@ -333,7 +337,7 @@ LICINEXUS_LOG_LEVEL=debug npx -y @licinexusbr/mcp
 
 In another window, watch the logs while the client makes calls.
 
-## Tools (16)
+## Tools (18)
 
 ### Compras / Licitações
 
@@ -375,6 +379,13 @@ In another window, watch the logs while the client makes calls.
 | Tool            | What it does                                                                                                                                                   |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `get_cnpj_data` | Receita Federal cadastro (CNAEs, sócios, capital, situação) via [BrasilAPI](https://brasilapi.com.br) (default) or MinhaReceita (`CNPJ_PROVIDER=minhareceita`) |
+
+### Aggregation analytics (v0.2.0)
+
+| Tool                                | What it does                                                                                                                       |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `aggregate_licitacoes_por_periodo`  | Time series of count (and optional sum) over a date window up to 5 years, with day/week/month/year bucketing. Filters: modality, UF, municipality, CNPJ, **sphere of government**. |
+| `compare_periodos`                  | Compares two periods side-by-side returning totals + absolute and percentual delta. Useful for questions like "was there electoral-year anticipation?". |
 
 ## Prompt templates (4)
 
