@@ -17,13 +17,15 @@ describe('server scaffold', () => {
 });
 
 describe('tool registry', () => {
-  it('registers all 16 tools (Phases 1–5)', () => {
-    expect(allTools.length).toBe(16);
+  it('registers all 18 tools (Phases 1–5 + 7 aggregation)', () => {
+    expect(allTools.length).toBe(18);
   });
 
   it('exposes expected tool names', () => {
     const names = allTools.map((t) => t.definition.name).sort();
     expect(names).toEqual([
+      'aggregate_licitacoes_por_periodo',
+      'compare_periodos',
       'get_ata_rp',
       'get_cnpj_data',
       'get_contrato',

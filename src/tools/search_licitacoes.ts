@@ -7,6 +7,7 @@ import {
   PNCP_MAX_DATE_RANGE_DAYS,
 } from '../utils/dates.js';
 import { DEFAULT_MODALIDADES, MODALIDADE_IDS, MODALIDADES_PNCP } from '../schemas/modalidades.js';
+import { EsferaSchema, ESFERA_VALUES, matchesEsfera } from '../utils/esfera.js';
 import type { Contratacao } from '../schemas/pncp.js';
 import type { ToolDef } from './types.js';
 import { errorResult, jsonResult } from './types.js';
@@ -21,6 +22,7 @@ const ArgsSchema = z.object({
     .string()
     .regex(/^\d{14}$/, 'CNPJ must be 14 digits, no punctuation')
     .optional(),
+  esfera: EsferaSchema.optional(),
   palavraChave: z.string().min(2).optional(),
   valorMinimo: z.number().nonnegative().optional(),
   valorMaximo: z.number().nonnegative().optional(),
@@ -114,6 +116,12 @@ export const searchLicitacoes: ToolDef = {
           type: 'string',
           description: 'Filter by procuring agency CNPJ (14 digits, no punctuation).',
         },
+        esfera: {
+          type: 'string',
+          enum: [...ESFERA_VALUES],
+          description:
+            "Filter by government sphere: 'federal', 'estadual', 'municipal', or 'distrital'. Useful when analyzing impact of policies that affect a specific sphere (e.g., municipal elections). Applied client-side over the agency's esferaId field.",
+        },
         palavraChave: {
           type: 'string',
           description: 'Keyword to filter on objetoCompra (case-insensitive substring match).',
@@ -163,6 +171,7 @@ export const searchLicitacoes: ToolDef = {
 
       const all = pages.flatMap((p) => p.data);
       const filtered = all.filter((c) => {
+        if (!matchesEsfera(c, args.esfera)) return false;
         if (args.palavraChave && !matchesKeyword(c, args.palavraChave)) return false;
         if (!matchesValor(c, args)) return false;
         return true;

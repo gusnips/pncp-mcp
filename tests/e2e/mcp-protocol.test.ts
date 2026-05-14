@@ -3,7 +3,7 @@
  * Spawns `node dist/index.js` and exchanges JSON-RPC messages directly,
  * verifying that:
  *   - the server completes the MCP initialize handshake
- *   - tools/list returns all 16 registered tools with valid schemas
+ *   - tools/list returns all 18 registered tools with valid schemas
  *   - prompts/list returns all 4 prompts
  *   - resources/list returns 2 resources
  *   - resources/read returns content
@@ -85,11 +85,11 @@ describe.skipIf(!!skipReason)('MCP protocol e2e (stdio)', () => {
     if (proc && !proc.killed) proc.kill();
   });
 
-  it('lists all 16 tools', async () => {
+  it('lists all 18 tools', async () => {
     const resp = (await send('tools/list')) as {
       result: { tools: Array<{ name: string; inputSchema: { type: string } }> };
     };
-    expect(resp.result.tools).toHaveLength(16);
+    expect(resp.result.tools).toHaveLength(18);
     for (const tool of resp.result.tools) {
       expect(tool.inputSchema.type).toBe('object');
     }

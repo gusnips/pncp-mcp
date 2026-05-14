@@ -6,6 +6,7 @@ import {
   validatePncpDateRange,
   PNCP_MAX_DATE_RANGE_DAYS,
 } from '../utils/dates.js';
+import { EsferaSchema, ESFERA_VALUES, matchesEsfera } from '../utils/esfera.js';
 import type { Ata } from '../schemas/pncp.js';
 import type { ToolDef } from './types.js';
 import { errorResult, jsonResult } from './types.js';
@@ -17,6 +18,7 @@ const ArgsSchema = z.object({
     .string()
     .regex(/^\d{14}$/, 'CNPJ must be 14 digits')
     .optional(),
+  esfera: EsferaSchema.optional(),
   somenteVigentes: z.boolean().default(true),
   palavraChave: z.string().min(2).optional(),
   pagina: z.number().int().min(1).default(1),
@@ -60,6 +62,12 @@ export const searchAtasRp: ToolDef = {
         dataInicial: { type: 'string', description: 'Start date YYYYMMDD' },
         dataFinal: { type: 'string', description: 'End date YYYYMMDD' },
         cnpjOrgao: { type: 'string', description: 'Filter by procuring agency CNPJ' },
+        esfera: {
+          type: 'string',
+          enum: [...ESFERA_VALUES],
+          description:
+            "Filter by government sphere: 'federal', 'estadual', 'municipal', or 'distrital'.",
+        },
         somenteVigentes: {
           type: 'boolean',
           default: true,
@@ -97,6 +105,7 @@ export const searchAtasRp: ToolDef = {
       });
       const today = new Date();
       const filtered = page.data.filter((a) => {
+        if (!matchesEsfera(a, args.esfera)) return false;
         if (args.somenteVigentes && !isVigente(a, today)) return false;
         if (args.palavraChave) {
           const lower = args.palavraChave.toLowerCase();

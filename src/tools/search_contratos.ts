@@ -6,6 +6,7 @@ import {
   validatePncpDateRange,
   PNCP_MAX_DATE_RANGE_DAYS,
 } from '../utils/dates.js';
+import { EsferaSchema, ESFERA_VALUES, matchesEsfera } from '../utils/esfera.js';
 import type { Contrato } from '../schemas/pncp.js';
 import type { ToolDef } from './types.js';
 import { errorResult, jsonResult } from './types.js';
@@ -21,6 +22,7 @@ const ArgsSchema = z.object({
     .string()
     .regex(/^\d{14}$/, 'CNPJ must be 14 digits')
     .optional(),
+  esfera: EsferaSchema.optional(),
   palavraChave: z.string().min(2).optional(),
   valorMinimo: z.number().nonnegative().optional(),
   valorMaximo: z.number().nonnegative().optional(),
@@ -83,6 +85,12 @@ export const searchContratos: ToolDef = {
         dataFinal: { type: 'string', description: 'End date YYYYMMDD' },
         cnpjOrgao: { type: 'string', description: 'Filter by procuring agency CNPJ' },
         cnpjFornecedor: { type: 'string', description: 'Filter by supplier CNPJ' },
+        esfera: {
+          type: 'string',
+          enum: [...ESFERA_VALUES],
+          description:
+            "Filter by government sphere: 'federal', 'estadual', 'municipal', or 'distrital'. Applied client-side.",
+        },
         palavraChave: {
           type: 'string',
           description: 'Keyword filter on objetoContrato (client-side).',
@@ -119,6 +127,7 @@ export const searchContratos: ToolDef = {
         tamanhoPagina: args.tamanhoPagina,
       });
       const filtered = page.data.filter((c) => {
+        if (!matchesEsfera(c, args.esfera)) return false;
         if (args.palavraChave && !matchesKeyword(c, args.palavraChave)) return false;
         if (!matchesValor(c, args)) return false;
         return true;

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-13
+
+Minor release — MCP analítico (Fase 7). Vira de "lookup transacional" para "agregação temporal + comparação".
+
+### Added
+
+- **Tool `aggregate_licitacoes_por_periodo`** — série temporal de contagem (e opcionalmente valor) sobre uma janela de até **~5 anos**, com bucketing por `dia` / `semana` / `mes` / `ano`. Filtros: modalidades, uf, codigoMunicipioIbge, cnpjOrgao, esfera. Modo rápido (`count` apenas, sem `esfera`) usa `totalRegistros` do PNCP — 1 call por bucket × modalidade. Modo paginado (com `esfera` ou métricas de valor) caps em 50 páginas/bucket e 200 buckets-modalidade no total para proteger latência. Concurrency interna de 4 calls em paralelo.
+- **Tool `compare_periodos`** — compara dois períodos lado-a-lado com os mesmos filtros, retornando totais por métrica + `delta { absoluto, percentual }`. Caso de uso primário: questões como _"Houve antecipação de licitações em Jun/2024 (eleitoral) comparado a Jun/2025?"_.
+- **Filtro `esfera`** (`federal` / `estadual` / `municipal` / `distrital`) em `search_licitacoes`, `search_contratos` e `search_atas_rp`. Aplicado client-side sobre o campo `orgaoEntidade.esferaId` retornado pelo PNCP (mapping `F`/`E`/`M`/`D`).
+- `src/utils/esfera.ts` — `ESFERA_VALUES`, `EsferaSchema`, `matchesEsfera()` reutilizáveis.
+
+### Notes
+
+- O `aggregate_licitacoes_por_periodo` em modo **count-only sem `esfera`** é dramaticamente mais rápido que em modo paginado. Para análises de tendência puras, use só `metricas: ['count']` e omita `esfera`.
+- O filtro `esfera` em `search_pca` não é suportado nesta versão porque o endpoint de PCA do PNCP não retorna `orgaoEntidade.esferaId` (apenas `orgaoCnpj`). Para recortar PCA por esfera, cruzar o CNPJ retornado com `get_orgao`.
+- **Closes #17**.
+
 ## [0.1.3] - 2026-05-13
 
 Bug fix: validar limite de 365 dias do PNCP antes de chamar a API.
