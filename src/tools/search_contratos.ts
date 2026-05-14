@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { listContratos, PncpError } from '../adapters/pncp.js';
-import { defaultDateRange, isValidPncpDate } from '../utils/dates.js';
+import {
+  defaultDateRange,
+  isValidPncpDate,
+  validatePncpDateRange,
+  PNCP_MAX_DATE_RANGE_DAYS,
+} from '../utils/dates.js';
 import type { Contrato } from '../schemas/pncp.js';
 import type { ToolDef } from './types.js';
 import { errorResult, jsonResult } from './types.js';
@@ -70,7 +75,7 @@ export const searchContratos: ToolDef = {
   definition: {
     name: 'search_contratos',
     description:
-      'Search public procurement contracts (contratos) on PNCP. Useful for analyzing market history, supplier behavior, and agency spending patterns. Defaults to last 30 days when no date range is provided.',
+      `Search public procurement contracts (contratos) on PNCP. Useful for analyzing market history, supplier behavior, and agency spending patterns. Defaults to last 30 days when no date range is provided. Maximum date range per query: ${PNCP_MAX_DATE_RANGE_DAYS} days (PNCP limit); wider windows return HTTP 422. For multi-year searches, issue multiple calls.`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -98,6 +103,11 @@ export const searchContratos: ToolDef = {
       !args.dataInicial || !args.dataFinal
         ? defaultDateRange(30)
         : { dataInicial: args.dataInicial, dataFinal: args.dataFinal };
+
+    const validation = validatePncpDateRange(range.dataInicial, range.dataFinal);
+    if (!validation.ok) {
+      return errorResult(validation.reason);
+    }
 
     try {
       const page = await listContratos({

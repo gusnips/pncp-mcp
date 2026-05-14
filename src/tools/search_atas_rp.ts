@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { listAtas, PncpError } from '../adapters/pncp.js';
-import { defaultDateRange, isValidPncpDate } from '../utils/dates.js';
+import {
+  defaultDateRange,
+  isValidPncpDate,
+  validatePncpDateRange,
+  PNCP_MAX_DATE_RANGE_DAYS,
+} from '../utils/dates.js';
 import type { Ata } from '../schemas/pncp.js';
 import type { ToolDef } from './types.js';
 import { errorResult, jsonResult } from './types.js';
@@ -48,7 +53,7 @@ export const searchAtasRp: ToolDef = {
   definition: {
     name: 'search_atas_rp',
     description:
-      'Search Atas de Registro de Preço (price-registry agreements) on PNCP. ARPs are pre-negotiated agreements that any compatible agency can use within the validity period — finding ones still in vigor with available balance is a key business opportunity. Defaults: last 90 days, only active (somenteVigentes=true).',
+      `Search Atas de Registro de Preço (price-registry agreements) on PNCP. ARPs are pre-negotiated agreements that any compatible agency can use within the validity period — finding ones still in vigor with available balance is a key business opportunity. Defaults: last 90 days, only active (somenteVigentes=true). Maximum date range per query: ${PNCP_MAX_DATE_RANGE_DAYS} days (PNCP limit); wider windows return HTTP 422.`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -76,6 +81,11 @@ export const searchAtasRp: ToolDef = {
       !args.dataInicial || !args.dataFinal
         ? defaultDateRange(90)
         : { dataInicial: args.dataInicial, dataFinal: args.dataFinal };
+
+    const validation = validatePncpDateRange(range.dataInicial, range.dataFinal);
+    if (!validation.ok) {
+      return errorResult(validation.reason);
+    }
 
     try {
       const page = await listAtas({

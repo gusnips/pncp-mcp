@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { listContratacoes, PncpError } from '../adapters/pncp.js';
-import { defaultDateRange, isValidPncpDate } from '../utils/dates.js';
+import {
+  defaultDateRange,
+  isValidPncpDate,
+  validatePncpDateRange,
+  PNCP_MAX_DATE_RANGE_DAYS,
+} from '../utils/dates.js';
 import { DEFAULT_MODALIDADES, MODALIDADE_IDS, MODALIDADES_PNCP } from '../schemas/modalidades.js';
 import type { Contratacao } from '../schemas/pncp.js';
 import type { ToolDef } from './types.js';
@@ -74,6 +79,8 @@ export const searchLicitacoes: ToolDef = {
       '',
       'PNCP requires a date range and at least one modality code per query. If you do not specify, defaults are: last 7 days and modalities [6, 8, 9] (Pregão Eletrônico, Dispensa, Inexigibilidade — most common).',
       '',
+      `Maximum date range per query: ${PNCP_MAX_DATE_RANGE_DAYS} days (PNCP limit). Wider windows return HTTP 422. For multi-year searches, issue multiple calls with date windows of <= ${PNCP_MAX_DATE_RANGE_DAYS} days each.`,
+      '',
       'Modality codes:',
       ...MODALIDADES_PNCP.map((m) => `  ${m.id} = ${m.nome}`),
       '',
@@ -130,6 +137,12 @@ export const searchLicitacoes: ToolDef = {
       !args.dataInicial || !args.dataFinal
         ? defaultDateRange(7)
         : { dataInicial: args.dataInicial, dataFinal: args.dataFinal };
+
+    const validation = validatePncpDateRange(range.dataInicial, range.dataFinal);
+    if (!validation.ok) {
+      return errorResult(validation.reason);
+    }
+
     const modalidades = args.modalidades ?? DEFAULT_MODALIDADES;
 
     try {

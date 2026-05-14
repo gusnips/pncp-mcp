@@ -106,11 +106,20 @@ function asArray(data: unknown): unknown[] {
   return [];
 }
 
+function extractApiMessage(data: unknown): string | null {
+  if (!data || typeof data !== 'object') return null;
+  const obj = data as Record<string, unknown>;
+  const m = obj.message ?? obj.error_description ?? obj.detail;
+  return typeof m === 'string' && m.length > 0 ? m : null;
+}
+
 function describeAxiosError(err: AxiosError): string {
   const status = err.response?.status;
   const url = err.config?.url ?? '?';
   if (status) {
-    return `PNCP returned HTTP ${status} for ${url}`;
+    const apiMsg = extractApiMessage(err.response?.data);
+    const suffix = apiMsg ? `: ${apiMsg}` : '';
+    return `PNCP returned HTTP ${status} for ${url}${suffix}`;
   }
   if (err.code === 'ECONNABORTED') {
     return `PNCP request timed out after ${REQUEST_TIMEOUT_MS}ms (${url})`;

@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { listPcaAtualizacao, PncpError } from '../adapters/pncp.js';
-import { defaultDateRange, isValidPncpDate } from '../utils/dates.js';
+import {
+  defaultDateRange,
+  isValidPncpDate,
+  validatePncpDateRange,
+  PNCP_MAX_DATE_RANGE_DAYS,
+} from '../utils/dates.js';
 import type { ToolDef } from './types.js';
 import { errorResult, jsonResult } from './types.js';
 
@@ -16,7 +21,7 @@ export const searchPca: ToolDef = {
   definition: {
     name: 'search_pca',
     description:
-      "Search recently published/updated Plano de Contratação Anual (PCA) entries — what public agencies INTEND to buy. Returns PCA entries (one per agency unit) with their items embedded. Filter by classification: 'material' or 'servico'. Defaults: last 30 days, classification 'material'. Per Lei 14.133.",
+      `Search recently published/updated Plano de Contratação Anual (PCA) entries — what public agencies INTEND to buy. Returns PCA entries (one per agency unit) with their items embedded. Filter by classification: 'material' or 'servico'. Defaults: last 30 days, classification 'material'. Per Lei 14.133. Maximum date range per query: ${PNCP_MAX_DATE_RANGE_DAYS} days (PNCP limit).`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -49,6 +54,11 @@ export const searchPca: ToolDef = {
             return { dataInicio: r.dataInicial, dataFim: r.dataFinal };
           })()
         : { dataInicio: args.dataInicio, dataFim: args.dataFim };
+
+    const validation = validatePncpDateRange(range.dataInicio, range.dataFim);
+    if (!validation.ok) {
+      return errorResult(validation.reason);
+    }
 
     try {
       const page = await listPcaAtualizacao({
