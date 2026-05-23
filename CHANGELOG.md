@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-05-23
+
+Patch release — qualidade interna acumulada após v0.2.0. Sem mudança de comportamento das tools, apenas reforço de cobertura, formatação e infra de release.
+
+### Added
+
+- **Cobertura de testes** para `src/utils/dates.ts` (`formatPncpDate`, `daysBetweenPncpDates`, `validatePncpDateRange`) — fecha #21 e #24 (good first issues contribuídas pela comunidade).
+- **release-please** configurado em GitHub Actions para versionamento automático a partir de Conventional Commits (`feat:` / `fix:` / `chore:`).
+
+### Changed
+
+- Formatação consistente via `prettier` aplicada em 7 arquivos de `src/tools/` e `src/utils/` — fecha #23.
+- `package-lock.json` ressincronizado.
+
+### Notes
+
+- Nenhuma mudança nas tools ou no contrato MCP. `npx -y @licinexusbr/mcp@latest` continua funcionando idêntico.
+- Próxima minor (v0.3.x) explora adapter para TCE-SP (#20) e i18n PT-BR de mensagens de erro (#18, aberta como good first issue para a comunidade).
+
 ## [0.2.0] - 2026-05-13
 
 Minor release — MCP analítico (Fase 7). Vira de "lookup transacional" para "agregação temporal + comparação".
