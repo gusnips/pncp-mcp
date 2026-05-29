@@ -1,6 +1,6 @@
 {
   "name": "@licinexusbr/mcp",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "mcpName": "io.github.Licinexus/mcp",
   "description": "MCP server for Brazilian public procurement data (PNCP + Receita Federal). Maintained by Licinexus.",
   "type": "module",
@@ -56,7 +56,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
     "axios": "^1.7.9",
-    "zod": "^3.24.1"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
